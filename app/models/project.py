@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy import Column, String, Text, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
