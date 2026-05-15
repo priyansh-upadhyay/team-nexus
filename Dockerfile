@@ -31,10 +31,10 @@ COPY --from=backend-builder /usr/local/bin /usr/local/bin
 # Copy app code
 COPY . .
 
-# Nuclear Fix: Find any folder containing index.html and move it to static
+# Nuclear Fix: Find any folder containing index.html (ignoring node_modules)
 COPY --from=frontend-builder /web /web-build
 RUN mkdir -p /app/static && \
-    TARGET_DIR=$(find /web-build -name "index.html" -exec dirname {} + | head -n 1) && \
+    TARGET_DIR=$(find /web-build -name "index.html" -not -path "*/node_modules/*" -exec dirname {} + | head -n 1) && \
     if [ -n "$TARGET_DIR" ]; then \
         echo "[SUCCESS] Found website files in: $TARGET_DIR"; \
         cp -rv $TARGET_DIR/* /app/static/; \

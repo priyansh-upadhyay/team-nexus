@@ -57,10 +57,14 @@ app.include_router(tasks_router)
 
 @app.get("/api/health-check", tags=["Health"])
 def health_check_api() -> dict:
+    static_files = []
+    if os.path.exists(static_dir):
+        static_files = os.listdir(static_dir)
     return {
         "message": "Welcome to the Team Task Manager API",
         "app": settings.APP_NAME,
         "environment": settings.ENVIRONMENT,
+        "static_files": static_files,
         "docs": "/docs",
     }
 
