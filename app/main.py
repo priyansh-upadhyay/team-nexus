@@ -73,6 +73,8 @@ if not os.path.exists(static_dir):
 
 print(f"[INFO] Discovery: Static directory set to: {static_dir}")
 print(f"[INFO] Discovery: Static directory exists: {os.path.exists(static_dir)}")
+if os.path.exists(static_dir):
+    print(f"[INFO] Discovery: Contents of static_dir: {os.listdir(static_dir)}")
 
 if os.path.exists(static_dir):
     assets_dir = os.path.join(static_dir, "assets")
