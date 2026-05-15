@@ -31,11 +31,19 @@ COPY --from=backend-builder /usr/local/bin /usr/local/bin
 # Copy app code
 COPY . .
 
-# Copy built frontend files to a 'static' directory
-# TanStack Start typically builds to .output/public or dist/client
-COPY --from=frontend-builder /web/.output/public /app/static 2>/dev/null || \
-COPY --from=frontend-builder /web/dist/client /app/static 2>/dev/null || \
-COPY --from=frontend-builder /web/dist /app/static
+# Copy built frontend files from the builder stage and move to static
+COPY --from=frontend-builder /web /web-build
+RUN mkdir -p /app/static && \
+    if [ -d "/web-build/.output/public" ]; then \
+        cp -rv /web-build/.output/public/* /app/static/; \
+    elif [ -d "/web-build/dist/client" ]; then \
+        cp -rv /web-build/dist/client/* /app/static/; \
+    elif [ -d "/web-build/dist" ]; then \
+        cp -rv /web-build/dist/* /app/static/; \
+    else \
+        echo "ERROR: No build output found!"; exit 1; \
+    fi && \
+    rm -rf /web-build
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
