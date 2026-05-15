@@ -55,29 +55,6 @@ app.include_router(projects_router)
 app.include_router(task_projects_router)
 app.include_router(tasks_router)
 
-# Mount static files for the frontend
-# Look for 'static' in the current working directory first (common in Docker)
-static_dir = os.path.join(os.getcwd(), "static")
-if not os.path.exists(static_dir):
-    # Fallback to relative path from this file
-    static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
-
-if os.path.exists(static_dir):
-    app.mount("/assets", StaticFiles(directory=os.path.join(static_dir, "assets")), name="assets")
-
-    @app.get("/{full_path:path}")
-    async def serve_frontend(full_path: str):
-        # Serve the frontend index.html for any route that isn't an API route
-        # This handles client-side routing (React Router)
-        file_path = os.path.join(static_dir, full_path)
-        if os.path.isfile(file_path) and not full_path.startswith("api/"):
-            return FileResponse(file_path)
-        return FileResponse(os.path.join(static_dir, "index.html"))
-else:
-    @app.get("/")
-    def root():
-        return {"message": "Team Task Manager API is running, but static frontend files were not found."}
-
 @app.get("/api/health-check", tags=["Health"])
 def health_check_api() -> dict:
     return {
@@ -86,3 +63,35 @@ def health_check_api() -> dict:
         "environment": settings.ENVIRONMENT,
         "docs": "/docs",
     }
+
+# ── Static File Serving (Must be at the very end) ──────────────────────────
+# Look for 'static' in the current working directory first (common in Docker)
+static_dir = os.path.join(os.getcwd(), "static")
+if not os.path.exists(static_dir):
+    # Fallback to relative path from this file
+    static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
+
+print(f"[INFO] Discovery: Static directory set to: {static_dir}")
+print(f"[INFO] Discovery: Static directory exists: {os.path.exists(static_dir)}")
+
+if os.path.exists(static_dir):
+    assets_dir = os.path.join(static_dir, "assets")
+    if os.path.exists(assets_dir):
+        print(f"[INFO] Discovery: Mounting /assets from {assets_dir}")
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        # Serve the frontend index.html for any route that isn't an API route
+        file_path = os.path.join(static_dir, full_path)
+        if os.path.isfile(file_path) and not full_path.startswith("api/"):
+            return FileResponse(file_path)
+        
+        index_path = os.path.join(static_dir, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        return {"error": "Frontend build files missing. Check /app/static directory."}
+else:
+    @app.get("/")
+    def root():
+        return {"message": "Team Task Manager API is running, but static frontend files were not found."}
