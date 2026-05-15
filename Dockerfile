@@ -31,17 +31,16 @@ COPY --from=backend-builder /usr/local/bin /usr/local/bin
 # Copy app code
 COPY . .
 
-# Copy built frontend files from the builder stage and move to static
+# Nuclear Fix: Find any folder containing index.html and move it to static
 COPY --from=frontend-builder /web /web-build
 RUN mkdir -p /app/static && \
-    if [ -d "/web-build/.output/public" ]; then \
-        cp -rv /web-build/.output/public/* /app/static/; \
-    elif [ -d "/web-build/dist/client" ]; then \
-        cp -rv /web-build/dist/client/* /app/static/; \
-    elif [ -d "/web-build/dist" ]; then \
-        cp -rv /web-build/dist/* /app/static/; \
+    TARGET_DIR=$(find /web-build -name "index.html" -exec dirname {} + | head -n 1) && \
+    if [ -n "$TARGET_DIR" ]; then \
+        echo "[SUCCESS] Found website files in: $TARGET_DIR"; \
+        cp -rv $TARGET_DIR/* /app/static/; \
     else \
-        echo "ERROR: No build output found!"; exit 1; \
+        echo "[ERROR] Could not find any index.html in /web after build!"; \
+        exit 1; \
     fi && \
     rm -rf /web-build
 
