@@ -4,7 +4,7 @@ WORKDIR /web
 COPY web/package*.json ./
 RUN npm install
 COPY web/ .
-RUN npm run build
+RUN npm run build:spa
 
 # ── Backend Build Stage ───────────────────────────────────────────────────
 FROM python:3.11-slim AS backend-builder
@@ -16,11 +16,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ── Final Stage ──────────────────────────────────────────────────────────
+# ── Backend Final Stage ───────────────────────────────────────────────────
 FROM python:3.11-slim
 WORKDIR /app
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -31,15 +33,15 @@ COPY --from=backend-builder /usr/local/bin /usr/local/bin
 # Copy app code
 COPY . .
 
-# Nuclear Fix: Find any folder containing index.html (ignoring node_modules)
+# Final SPA Hand-off: Find the REAL index.html and move it to static
 COPY --from=frontend-builder /web /web-build
 RUN mkdir -p /app/static && \
-    TARGET_DIR=$(find /web-build -name "index.html" -not -path "*/node_modules/*" -exec dirname {} + | head -n 1) && \
+    TARGET_DIR=$(find /web-build/dist -name "index.html" | head -n 1 | xargs dirname) && \
     if [ -n "$TARGET_DIR" ]; then \
-        echo "[SUCCESS] Found website files in: $TARGET_DIR"; \
+        echo "[SUCCESS] Found REAL website files in: $TARGET_DIR"; \
         cp -rv $TARGET_DIR/* /app/static/; \
     else \
-        echo "[ERROR] Could not find any index.html in /web after build!"; \
+        echo "[ERROR] Could not find the built index.html! Build might have failed."; \
         exit 1; \
     fi && \
     rm -rf /web-build
