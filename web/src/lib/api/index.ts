@@ -3,7 +3,7 @@
 
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ||
-  (import.meta.env.PROD ? "" : "http://localhost:8000");
+  (import.meta.env.PROD ? "/api" : "http://localhost:8000/api");
 
 const TOKEN_KEY = "tn_access_token";
 

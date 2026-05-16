@@ -45,15 +45,15 @@ from fastapi.responses import FileResponse
 import os
 
 # ... (Include routers remains the same)
-app.include_router(health_router)
-app.include_router(auth_router)
-app.include_router(users_router)
-app.include_router(teams_router)
-app.include_router(team_members_router)
-app.include_router(project_teams_router)
-app.include_router(projects_router)
-app.include_router(task_projects_router)
-app.include_router(tasks_router)
+app.include_router(health_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
+app.include_router(users_router, prefix="/api")
+app.include_router(teams_router, prefix="/api")
+app.include_router(team_members_router, prefix="/api")
+app.include_router(project_teams_router, prefix="/api")
+app.include_router(projects_router, prefix="/api")
+app.include_router(task_projects_router, prefix="/api")
+app.include_router(tasks_router, prefix="/api")
 
 @app.get("/api/health-check", tags=["Health"])
 def health_check_api() -> dict:

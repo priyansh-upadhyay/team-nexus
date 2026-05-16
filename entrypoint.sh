@@ -37,5 +37,5 @@ echo "[INFO] Running Alembic migrations..."
 alembic upgrade head
 echo "[OK] Migrations complete."
 
-echo "[INFO] Starting uvicorn production server on 0.0.0.0:8000 ..."
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000
+echo "[INFO] Starting uvicorn production server on 0.0.0.0:${PORT:-8000} ..."
+exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
