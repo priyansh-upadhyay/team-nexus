@@ -9,7 +9,7 @@
     "build:spa": "vite build --mode production",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
-    "start": "vite preview --port 8080 --host 0.0.0.0",
+    "start": "vite dev --port 8080 --host 0.0.0.0",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
