@@ -71,10 +71,17 @@ export async function apiRequest<T = unknown>(
   const data = text ? safeJson(text) : null;
 
   if (!res.ok) {
-    const message =
-      (data && typeof data === "object" && "detail" in data && typeof (data as any).detail === "string"
-        ? (data as any).detail
-        : null) || res.statusText || "Request failed";
+    let message = "Request failed";
+    if (data && typeof data === "object" && "detail" in data) {
+      const detail = (data as any).detail;
+      if (typeof detail === "string") {
+        message = detail;
+      } else if (Array.isArray(detail)) {
+        message = detail.map((err: any) => err.msg || "Validation error").join(", ");
+      }
+    } else if (res.statusText) {
+      message = res.statusText;
+    }
     throw new ApiError(message, res.status, data);
   }
 
