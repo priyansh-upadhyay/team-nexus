@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.user import User
 from app.schemas.auth import UserResponse
-from app.api.dependencies import get_current_user, get_current_superuser
+from app.api.dependencies import get_current_user, get_current_superuser, get_current_active_user
 
 router = APIRouter(
     prefix="/users",
