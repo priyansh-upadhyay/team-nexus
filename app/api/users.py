@@ -223,3 +223,26 @@ async def deactivate_user(
     db.commit()
     
     return {"detail": f"User {user.email} deactivated"}
+
+
+@router.delete(
+    "/me",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete current user account",
+    responses={
+        204: {"description": "Account deleted successfully"},
+        401: {"description": "Not authenticated"},
+    },
+)
+async def delete_my_account(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Delete the currently authenticated user's account permanently.
+    
+    **Protected Route:** Requires valid JWT token
+    """
+    db.delete(current_user)
+    db.commit()
+    return None

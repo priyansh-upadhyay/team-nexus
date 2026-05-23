@@ -37,9 +37,22 @@ function SettingsPage() {
     }, 800)
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (confirm("Are you sure you want to delete your account? This action is irreversible.")) {
-      toast.error("Account deletion is disabled for demo users.")
+      setIsSaving(true)
+      try {
+        const { deleteAccount } = await import("@/lib/api")
+        await deleteAccount()
+        toast.success("Account deleted successfully")
+        // The auth hook doesn't expose logout directly here, so we clear token and reload
+        const { tokenStorage } = await import("@/lib/api")
+        tokenStorage.clear()
+        window.location.href = "/login"
+      } catch (err: any) {
+        toast.error(err.message || "Failed to delete account")
+      } finally {
+        setIsSaving(false)
+      }
     }
   }
 

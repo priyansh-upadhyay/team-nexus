@@ -116,3 +116,10 @@ export async function register(email: string, full_name: string, password: strin
     body: { email, full_name, password },
   });
 }
+
+export async function deleteAccount(): Promise<void> {
+  return apiRequest<void>("/users/me", {
+    method: "DELETE",
+    auth: true,
+  });
+}
